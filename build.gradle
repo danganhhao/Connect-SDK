@@ -2,10 +2,10 @@ buildscript {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.0.1'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:2.1'
+        classpath 'com.android.tools.build:gradle:7.4.2'
     }
 }
 
@@ -13,6 +13,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
         maven { url "https://jitpack.io" }
     }
 }
@@ -20,7 +21,6 @@ allprojects {
 apply plugin: 'com.android.library'
 apply plugin: 'jacoco'
 
-apply plugin: 'com.github.dcendents.android-maven'
 group='com.github.ConnectSDK'
 
 jacoco {
@@ -55,12 +55,14 @@ task jacocoTestReport(type:JacocoReport, dependsOn: "check") {
 build.dependsOn jacocoTestReport
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     buildToolsVersion '30.0.3'
+
+    namespace "com.connectsdk"
 
     defaultConfig {
         minSdkVersion 23
-        targetSdkVersion 32
+        targetSdkVersion 33
     }
 
     packagingOptions {
@@ -109,11 +111,11 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
     useLibrary 'org.apache.http.legacy'
-    ndkVersion "22.1.7171670"
+    ndkVersion '28.2.13676358'
 }
 
 android.testOptions.unitTests.all {
@@ -127,10 +129,10 @@ dependencies {
     implementation fileTree(dir: 'modules/firetv/libs', include: '*.jar')
 
 
-    implementation 'androidx.mediarouter:mediarouter:1.2.0'
+    implementation 'androidx.mediarouter:mediarouter:1.8.1'
     implementation 'androidx.annotation:annotation:1.0.0'
     implementation 'androidx.preference:preference:1.1.1'
-    implementation 'androidx.appcompat:appcompat:1.3.1'  // 1.4.1 version doesn't support compile sdk 30
+    implementation 'androidx.appcompat:appcompat:1.7.1'  // 1.4.1 version doesn't support compile sdk 30
     implementation 'com.googlecode.plist:dd-plist:1.23'
     implementation 'com.nimbusds:srp6a:2.1.0'
     implementation 'net.i2p.crypto:eddsa:0.3.0'
