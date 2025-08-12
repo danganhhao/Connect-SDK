@@ -26,11 +26,6 @@ import android.os.Build;
 import android.provider.Settings;
 import com.connectsdk.device.ConnectableDevice;
 import com.connectsdk.discovery.DiscoveryManager;
-import com.connectsdk.service.webos.lgcast.common.utils.AppUtil;
-import com.connectsdk.service.webos.lgcast.common.utils.IOUtil;
-import com.connectsdk.service.webos.lgcast.common.utils.StringUtil;
-import com.connectsdk.service.webos.lgcast.screenmirroring.service.MirroringService;
-import com.connectsdk.service.webos.lgcast.screenmirroring.uibc.UibcAccessibilityService;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,19 +38,10 @@ public interface ScreenMirroringControl extends CapabilityMethods {
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Static functions
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    static int getSdkVersion(Context context) {
-        String version = IOUtil.readRawResourceText(context, com.connectsdk.R.raw.lgcast_version);
-        return StringUtil.toInteger(version, -1);
-    }
-
     static boolean isCompatibleOsVersion() {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
     }
 
-    static boolean isRunning(Context context) {
-        ActivityManager.RunningServiceInfo serviceInfo = AppUtil.getServiceInfo(context, MirroringService.class.getName());
-        return (serviceInfo != null) ? serviceInfo.foreground : false;
-    }
 
     static boolean isSupportScreenMirroring(String deviceId) {
         ConnectableDevice dvc = DiscoveryManager.getInstance().getDeviceById(deviceId);
@@ -63,21 +49,10 @@ public interface ScreenMirroringControl extends CapabilityMethods {
         return capabilities.contains(ScreenMirroringControl.ScreenMirroring);
     }
 
-    static boolean isUibcEnabled(Context context) {
-        String prefString = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES);
-        return prefString != null && prefString.contains(context.getPackageName() + "/" + UibcAccessibilityService.class.getName());
-    }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Interfaces
     ///////////////////////////////////////////////////////////////////////////////////////////////
-    ScreenMirroringControl getScreenMirroringControl();
-    void startScreenMirroring(Context context, Intent projectionData, ScreenMirroringStartListener onStartListener);
-    void startScreenMirroring(Context context, Intent projectionData, Class secondScreenClass, ScreenMirroringStartListener onStartListener);
-    void stopScreenMirroring(Context context, ScreenMirroringStopListener stopListener);
-    void setErrorListener(Context context, ScreenMirroringErrorListener errorListener);
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////
     // Listeners

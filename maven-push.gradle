@@ -110,3 +110,57 @@ def getRepositoryPassword() {
 //        archives androidSourcesJar
 //    }
 //}
+
+
+
+
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier "sources"
+}
+
+project.afterEvaluate {
+    publishToMavenLocal {
+        def groupId = GROUP
+        def artifactId = POM_ARTIFACT_ID
+        def versionName = VERSION_NAME
+        publishing {
+            publications {
+                maven(MavenPublication) {
+                    from components.release
+                    artifact(sourceJar)
+                    setGroupId groupId
+                    setArtifactId artifactId
+                    version versionName
+                }
+
+            }
+            publications.all {
+                pom.withXml {
+                    asNode().dependencies.'*'
+                            .findAll() {
+                                it.scope.text() == 'runtime' &&
+                                        project.configurations.implementation.allDependencies.find {
+                                            dep -> {
+                                                dep.name == it.artifactId.text()
+                                            }
+                                        }
+                            }.each { it.scope*.value = 'compile'}
+                }
+            }
+        }
+
+        doLast {
+            def prettyPrint = {
+                1.upto(100, { print "=" })
+                println()
+            }
+            println()
+            prettyPrint()
+            println "PUBLICATION FINISHED"
+            println "Artifact RELEASE: " + groupId + ":" + artifactId +  ":" + versionName
+            println "Artifact DEBUG: " + groupId + ":" + artifactId +  ":" + versionName
+            prettyPrint()
+        }
+    }
+}

@@ -72,9 +72,6 @@ import com.connectsdk.service.webos.WebOSTVMouseSocketConnection;
 import com.connectsdk.service.webos.WebOSTVServiceSocketClient;
 import com.connectsdk.service.webos.WebOSTVServiceSocketClient.WebOSTVServiceSocketClientListener;
 
-import com.connectsdk.service.webos.lgcast.common.utils.XmlUtil;
-import com.connectsdk.service.webos.lgcast.remotecamera.api.RemoteCameraApi;
-import com.connectsdk.service.webos.lgcast.screenmirroring.api.ScreenMirroringApi;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -2456,8 +2453,11 @@ public class WebOSTVService extends WebOSTVDeviceService implements Launcher, Me
             }
 
             String locationXML = serviceDescription.getLocationXML();
-            String appCasting = (locationXML != null) ? XmlUtil.findElement(locationXML, "appCasting") : null;
-            String appCastingFeature = (locationXML != null) ? XmlUtil.findElement(locationXML, "supportAppcastingFeatures") : null;
+//            String appCasting = (locationXML != null) ? XmlUtil.findElement(locationXML, "appCasting") : null;
+//            String appCastingFeature = (locationXML != null) ? XmlUtil.findElement(locationXML, "supportAppcastingFeatures") : null;
+
+            String appCasting = null;
+            String appCastingFeature = null;
 
             if (appCastingFeature != null) {
                 // <supportAppcastingFeatures>mirroring|remote-camera</supportAppcastingFeatures>
@@ -2572,77 +2572,5 @@ public class WebOSTVService extends WebOSTVDeviceService implements Launcher, Me
 
     public static interface SystemInfoListener extends ResponseListener<JSONObject> { }
 
-    /**********************************************************************************************
-     * SCREEN MIRRORING
-     *********************************************************************************************/
-    @Override
-    public ScreenMirroringControl getScreenMirroringControl() {
-        return this;
-    }
 
-    @Override
-    public void startScreenMirroring(Context context, Intent projectionData, ScreenMirroringStartListener startListener) {
-        ScreenMirroringApi.getInstance().startMirroring(context, projectionData, getServiceDescription().getIpAddress(), null, startListener);
-    }
-
-    @Override
-    public void startScreenMirroring(Context context, Intent projectionData, Class secondScreenClass, ScreenMirroringStartListener startListener) {
-        ScreenMirroringApi.getInstance().startMirroring(context, projectionData, getServiceDescription().getIpAddress(), secondScreenClass, startListener);
-    }
-
-    @Override
-    public void stopScreenMirroring(Context context, ScreenMirroringStopListener stopListener) {
-        ScreenMirroringApi.getInstance().stopMirroring(context, stopListener);
-    }
-
-    @Override
-    public void setErrorListener(Context context, ScreenMirroringErrorListener errorListener) {
-        ScreenMirroringApi.getInstance().setErrorListener(context, screenMirroringError -> {
-            errorListener.onError(screenMirroringError);
-        });
-    }
-
-
-    /**********************************************************************************************
-     * REMOTE CAMERA
-     *********************************************************************************************/
-    @Override
-    public RemoteCameraControl getRemoteCameraControl() {
-        return this;
-    }
-
-    @Override
-    public void startRemoteCamera(Context context, Surface previewSurface, boolean micMute, int lensFacing, RemoteCameraStartListener startListener) {
-        RemoteCameraApi.getInstance().startRemoteCamera(context, previewSurface, getServiceDescription().getIpAddress(), micMute, lensFacing, startListener);
-    }
-
-    @Override
-    public void stopRemoteCamera(Context context, RemoteCameraStopListener stopListener) {
-        RemoteCameraApi.getInstance().stopRemoteCamera(context, stopListener);
-    }
-
-    @Override
-    public void setMicMute(Context context, boolean micMute) {
-        RemoteCameraApi.getInstance().setMicMute(context, micMute);
-    }
-
-    @Override
-    public void setLensFacing(Context context, int lensFacing) {
-        RemoteCameraApi.getInstance().setLensFacing(context, lensFacing);
-    }
-
-    @Override
-    public void setCameraPlayingListener(Context context, RemoteCameraPlayingListener playingListener) {
-        RemoteCameraApi.getInstance().setCameraPlayingListener(context, playingListener);
-    }
-
-    @Override
-    public void setPropertyChangeListener(Context context, RemoteCameraPropertyChangeListener propertyChangeListener) {
-        RemoteCameraApi.getInstance().setPropertyChangeListener(context, propertyChangeListener);
-    }
-
-    @Override
-    public void setErrorListener(Context context, RemoteCameraErrorListener errorListener) {
-        RemoteCameraApi.getInstance().setErrorListener(context, errorListener);
-    }
 }
