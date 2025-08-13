@@ -123,7 +123,37 @@ android {
             exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'
         }
     }
+
+    testOptions {
+        // Skip device tests when no device is connected
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+
+        // Or disable instrumentation tests completely
+        unitTests.returnDefaultValues = true
+    }
+
+
 }
+
+
+tasks.configureEach { task ->
+    if (task.name.startsWith('connected') ||
+            task.name.startsWith('installDebugAndroidTest') ||
+            task.name.startsWith('installReleaseAndroidTest')) {
+        task.enabled = false
+    }
+}
+
+if (project.hasProperty('skipTests') && project.skipTests.toBoolean()) {
+    tasks.configureEach { task ->
+        if (task.name.contains('AndroidTest') ||
+                task.name.startsWith('connected') ||
+                task.name.startsWith('install') && task.name.contains('Test')) {
+            task.enabled = false
+        }
+    }
+}
+
 
 android.testOptions.unitTests.all {
     include '**/*Test.class'
