@@ -172,59 +172,58 @@ def getRepositoryPassword() {
 
 
 
-
-android {
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-        singleVariant("debug") {
-            withSourcesJar()
-        }
-    }
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = GROUP
-                artifactId = POM_ARTIFACT_ID
-                version = VERSION_NAME + "-release"
-            }
-            debug(MavenPublication) {
-                from components.debug
-                groupId = GROUP
-                artifactId = POM_ARTIFACT_ID
-                version = VERSION_NAME + "-debug"
-            }
-        }
-        publications.all {
-            pom.withXml {
-                asNode().dependencies.'*'
-                        .findAll() {
-                            it.scope.text() == 'runtime' &&
-                                    project.configurations.implementation.allDependencies.find {
-                                        dep -> dep.name == it.artifactId.text()
-                                    }
-                        }.each { it.scope*.value = 'compile'}
-            }
-        }
-    }
-
-    publishToMavenLocal {
-        doLast {
-            def prettyPrint = {
-                1.upto(100, { print "=" })
-                println()
-            }
-            println()
-            prettyPrint()
-            println "PUBLICATION FINISHED"
-            println "Artifact RELEASE: " + GROUP + ":" + POM_ARTIFACT_ID + ":" + VERSION_NAME + "-release"
-            println "Artifact DEBUG: " + GROUP + ":" + POM_ARTIFACT_ID + ":" + VERSION_NAME + "-debug"
-            prettyPrint()
-        }
-    }
-}
+//android {
+//    publishing {
+//        singleVariant("release") {
+//            withSourcesJar()
+//        }
+//        singleVariant("debug") {
+//            withSourcesJar()
+//        }
+//    }
+//}
+//
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            release(MavenPublication) {
+//                from components.release
+//                groupId = GROUP
+//                artifactId = POM_ARTIFACT_ID
+//                version = VERSION_NAME + "-release"
+//            }
+//            debug(MavenPublication) {
+//                from components.debug
+//                groupId = GROUP
+//                artifactId = POM_ARTIFACT_ID
+//                version = VERSION_NAME + "-debug"
+//            }
+//        }
+//        publications.all {
+//            pom.withXml {
+//                asNode().dependencies.'*'
+//                        .findAll() {
+//                            it.scope.text() == 'runtime' &&
+//                                    project.configurations.implementation.allDependencies.find {
+//                                        dep -> dep.name == it.artifactId.text()
+//                                    }
+//                        }.each { it.scope*.value = 'compile'}
+//            }
+//        }
+//    }
+//
+//    publishToMavenLocal {
+//        doLast {
+//            def prettyPrint = {
+//                1.upto(100, { print "=" })
+//                println()
+//            }
+//            println()
+//            prettyPrint()
+//            println "PUBLICATION FINISHED"
+//            println "Artifact RELEASE: " + GROUP + ":" + POM_ARTIFACT_ID + ":" + VERSION_NAME + "-release"
+//            println "Artifact DEBUG: " + GROUP + ":" + POM_ARTIFACT_ID + ":" + VERSION_NAME + "-debug"
+//            prettyPrint()
+//        }
+//    }
+//}
