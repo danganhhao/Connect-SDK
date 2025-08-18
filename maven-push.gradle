@@ -39,122 +39,139 @@ def getRepositoryPassword() {
     return hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : ""
 }
 
-//afterEvaluate { project ->
-//    uploadArchives {
-//        repositories {
-//            mavenDeployer {
-//                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+android {
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
+}
+
+afterEvaluate { project ->
+    publishing {
+        publications {
+            maven(MavenPublication) {
+                from components.release
+
+                groupId GROUP
+                artifactId POM_ARTIFACT_ID
+                version VERSION_NAME
+
+                pom {
+                    name = POM_NAME
+                    packaging = POM_PACKAGING
+                    description = POM_DESCRIPTION
+                    url = POM_URL
+
+                    scm {
+                        url = POM_SCM_URL
+                        connection = POM_SCM_CONNECTION
+                        developerConnection = POM_SCM_DEV_CONNECTION
+                    }
+
+                    licenses {
+                        license {
+                            name = POM_LICENCE_NAME
+                            url = POM_LICENCE_URL
+                            distribution = POM_LICENCE_DIST
+                        }
+                    }
+
+                    developers {
+                        developer {
+                            id = POM_DEVELOPER_ID
+                            name = POM_DEVELOPER_NAME
+                        }
+                    }
+                }
+            }
+        }
+
+        repositories {
+            maven {
+                name = "release"
+                url = getReleaseRepositoryUrl()
+                credentials {
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
+                }
+            }
+            maven {
+                name = "snapshot"
+                url = getSnapshotRepositoryUrl()
+                credentials {
+                    username = getRepositoryUsername()
+                    password = getRepositoryPassword()
+                }
+            }
+        }
+    }
+
+    signing {
+        required { isReleaseBuild() && gradle.taskGraph.hasTask("publish") }
+        sign publishing.publications.maven
+    }
+
+    task androidJavadocs(type: Javadoc) {
+        source = android.sourceSets.main.java.sourceFiles
+        classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+        android.libraryVariants.all { variant ->
+            if (variant.name == 'release') {
+                owner.classpath += variant.javaCompileProvider.get().classpath
+            }
+        }
+        exclude '**/BuildConfig.java'
+        exclude '**/R.java'
+    }
+
+    task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+        archiveClassifier.set('javadoc')
+        from androidJavadocs.destinationDir
+    }
+
+    task androidSourcesJar(type: Jar) {
+        archiveClassifier.set('sources')
+        from android.sourceSets.main.java.sourceFiles
+    }
+}
+
+
+
+
+
+//android {
+//    publishing {
+//        singleVariant("release") {
+//            withSourcesJar()
+//        }
+//    }
+//}
 //
-//                pom.groupId = GROUP
-//                pom.artifactId = POM_ARTIFACT_ID
-//                pom.version = VERSION_NAME
-//
-//                repository(url: getReleaseRepositoryUrl()) {
-//                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-//                }
-//                snapshotRepository(url: getSnapshotRepositoryUrl()) {
-//                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-//                }
-//
-//                pom.project {
-//                    name POM_NAME
-//                    packaging POM_PACKAGING
-//                    description POM_DESCRIPTION
-//                    url POM_URL
-//
-//                    scm {
-//                        url POM_SCM_URL
-//                        connection POM_SCM_CONNECTION
-//                        developerConnection POM_SCM_DEV_CONNECTION
-//                    }
-//
-//                    licenses {
-//                        license {
-//                            name POM_LICENCE_NAME
-//                            url POM_LICENCE_URL
-//                            distribution POM_LICENCE_DIST
-//                        }
-//                    }
-//
-//                    developers {
-//                        developer {
-//                            id POM_DEVELOPER_ID
-//                            name POM_DEVELOPER_NAME
-//                        }
-//                    }
-//                }
+//afterEvaluate {
+//    publishing {
+//        publications {
+//            release(MavenPublication) {
+//                from components.release
+//                groupId = GROUP
+//                artifactId = POM_ARTIFACT_ID
+//                version = VERSION_NAME
+//            }
+//        }
+//        publications.all {
+//            pom.withXml {
+//                asNode().dependencies.'*'
+//                        .findAll() {
+//                            it.scope.text() == 'runtime' &&
+//                                    project.configurations.implementation.allDependencies.find {
+//                                        dep -> dep.name == it.artifactId.text()
+//                                    }
+//                        }.each { it.scope*.value = 'compile'}
 //            }
 //        }
 //    }
 //
-//    signing {
-//        required { isReleaseBuild() && gradle.taskGraph.hasTask("uploadArchives") }
-//        sign configurations.archives
-//    }
-//
-//    //task androidJavadocs(type: Javadoc) {
-//    //source = android.sourceSets.main.allJava
-//    //}
-//
-//    //task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
-//    //classifier = 'javadoc'
-//    //from androidJavadocs.destinationDir
-//    //}
-//
-//    task androidSourcesJar(type: Jar) {
-//        classifier = 'sources'
-//        from android.sourceSets.main.java.sourceFiles
-//    }
-//
-//    artifacts {
-//        archives androidSourcesJar
-//    }
-//}
-
-
-
-//task sourceJar(type: Jar) {
-//    from android.sourceSets.main.java.srcDirs
-//    archiveClassifier = "sources"
-//}
-//
-//project.afterEvaluate {
 //    publishToMavenLocal {
-//        def groupId = GROUP
-//        def artifactId = POM_ARTIFACT_ID
-//        def versionName = VERSION_NAME + "-local"
-//        def debugSuffix = "-debug"
-//        def releaseSuffix = "-release"
-//        publishing {
-//            publications {
-//                LibraryRelease(MavenPublication) {
-//                    from components.release
-//                    artifact(sourceJar)
-//                    setGroupId groupId
-//                    setArtifactId artifactId
-//                    version versionName + releaseSuffix
-//                }
-//                LibraryDebug(MavenPublication) {
-//                    from components.debug
-//                    artifact(sourceJar)
-//                    setGroupId groupId
-//                    setArtifactId artifactId
-//                    version versionName + debugSuffix
-//                }
-//            }
-//            publications.all {
-//                pom.withXml {
-//                    asNode().dependencies.'*'
-//                            .findAll() {
-//                                it.scope.text() == 'runtime' &&
-//                                        project.configurations.implementation.allDependencies.find {
-//                                            dep -> dep.name == it.artifactId.text()
-//                                        }
-//                            }.each { it.scope*.value = 'compile'}
-//                }
-//            }
-//        }
-//
 //        doLast {
 //            def prettyPrint = {
 //                1.upto(100, { print "=" })
@@ -163,57 +180,8 @@ def getRepositoryPassword() {
 //            println()
 //            prettyPrint()
 //            println "PUBLICATION FINISHED"
-//            println "Artifact RELEASE: " + groupId + ":" + artifactId +  ":" + versionName + releaseSuffix
-//            println "Artifact DEBUG: " + groupId + ":" + artifactId +  ":" + versionName + debugSuffix
+//            println "Artifact: " + GROUP + ":" + POM_ARTIFACT_ID + ":" + VERSION_NAME
 //            prettyPrint()
 //        }
 //    }
 //}
-
-
-
-android {
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            release(MavenPublication) {
-                from components.release
-                groupId = GROUP
-                artifactId = POM_ARTIFACT_ID
-                version = VERSION_NAME
-            }
-        }
-        publications.all {
-            pom.withXml {
-                asNode().dependencies.'*'
-                        .findAll() {
-                            it.scope.text() == 'runtime' &&
-                                    project.configurations.implementation.allDependencies.find {
-                                        dep -> dep.name == it.artifactId.text()
-                                    }
-                        }.each { it.scope*.value = 'compile'}
-            }
-        }
-    }
-
-    publishToMavenLocal {
-        doLast {
-            def prettyPrint = {
-                1.upto(100, { print "=" })
-                println()
-            }
-            println()
-            prettyPrint()
-            println "PUBLICATION FINISHED"
-            println "Artifact: " + GROUP + ":" + POM_ARTIFACT_ID + ":" + VERSION_NAME
-            prettyPrint()
-        }
-    }
-}
